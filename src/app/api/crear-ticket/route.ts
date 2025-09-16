@@ -1,8 +1,20 @@
 // src/app/api/crear-ticket/route.ts
+
 import { NextResponse, NextRequest } from "next/server";
 
 const ID_EQUIPO_INFRAESTRUCTURA = 6;
 const TICKET_TYPE_IDS = { falla: 19, mejora: 20, consulta: 21 };
+
+// --- CORRECCIÓN (1/2): Definimos una interfaz para el objeto ticket ---
+// Esto define la "forma" que deben tener los datos del ticket, eliminando la necesidad de 'any'.
+interface TicketData {
+  name: string;
+  description: string;
+  team_id: number;
+  partner_id: number;
+  priority: string;
+  ticket_type_id: number;
+}
 
 export async function POST(request: NextRequest) {
   const { ODOO_URL, ODOO_DB, ODOO_USER_ID, ODOO_API_KEY } = process.env;
@@ -18,7 +30,6 @@ export async function POST(request: NextRequest) {
       | null;
     const partner_id = formData.get("partner_id") as string | null;
     const equipo_id = formData.get("equipo_id") as string | null;
-    // --- ELIMINADO: const attachmentFile = formData.get("attachment") as File | null;
 
     if (!title || !description || !priority || !tipo_ticket || !partner_id) {
       return NextResponse.json(
@@ -56,7 +67,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const ticketData: { [key: string]: any } = {
+    // --- CORRECCIÓN (2/2): Usamos la interfaz 'TicketData' en lugar de '{ [key: string]: any }' ---
+    const ticketData: TicketData = {
       name: title,
       description: description,
       team_id: ID_EQUIPO_INFRAESTRUCTURA,
@@ -65,14 +77,12 @@ export async function POST(request: NextRequest) {
       ticket_type_id: TICKET_TYPE_IDS[tipo_ticket],
     };
 
+    // Modificamos la descripción de forma segura sin que TypeScript se queje
     if (equipmentName) {
       ticketData.description += `\n\n--- Información del Equipo ---\nNombre: ${equipmentName}\nID: ${equipo_id}`;
     } else if (equipo_id) {
       ticketData.description += `\n\n--- Información del Equipo ---\nID: ${equipo_id}`;
     }
-
-    // --- ELIMINADO: Bloque completo que procesaba 'attachmentFile' ---
-    // Ya no se procesan adjuntos en el backend.
 
     const createPayload = {
       jsonrpc: "2.0",
@@ -85,7 +95,7 @@ export async function POST(request: NextRequest) {
           ODOO_API_KEY,
           "helpdesk.ticket",
           "create",
-          [ticketData],
+          [ticketData], // El objeto ticketData ya tiene el tipo correcto
         ],
       },
     };
