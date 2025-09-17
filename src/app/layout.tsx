@@ -22,8 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      {/* Aplicamos la fuente al body */}
+    <html lang="es" suppressHydrationWarning> 
       <body className={roboto.className}>{children}</body>
     </html>
   );
