@@ -14,6 +14,7 @@ interface TicketData {
   partner_id: number;
   priority: string;
   ticket_type_id: number;
+  user_id: 147;
 }
 
 export async function POST(request: NextRequest) {
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
       partner_id: parseInt(partner_id),
       priority: priority,
       ticket_type_id: TICKET_TYPE_IDS[tipo_ticket],
+      user_id: 147, // Asignado a un usuario específico
     };
 
     // Modificamos la descripción de forma segura sin que TypeScript se queje
